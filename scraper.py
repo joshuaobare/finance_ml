@@ -15,14 +15,19 @@ maxBtn.click()
 header = ['Date',	'Open',	'High',	'Low',	'Close*',	'Adj Close**',	'Volume']
 table_row = 1
 start_height = 0
+
 while True:
-    browser.execute_script(f"window.scrollTo({start_height}, document.documentElement.scrollHeight);")
+    browser.execute_script(
+        f"window.scrollTo({start_height}, document.documentElement.scrollHeight);")
     try:
         curr_row = browser.find_element(
             By.XPATH, f'//*[@id="Col1-1-HistoricalDataTable-Proxy"]/section/div[2]/table/tbody/tr[{table_row}]')
-        print(curr_row.get_attribute("textContent")  )
+        table_cells = curr_row.find_elements(By.TAG_NAME, 'td')
+        row_data = []
+        for table_cell in table_cells:
+            row_data.append(table_cell.get_attribute('textContent'))
     except:
         break
     table_row += 1
-    start_height = browser.execute_script('return document.documentElement.scrollHeight')
-    
+    start_height = browser.execute_script(
+        'return document.documentElement.scrollHeight')
