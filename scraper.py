@@ -13,10 +13,11 @@ maxBtn = browser.find_element(
 maxBtn.click()
 
 header = ['Date',	'Open',	'High',	'Low',	'Close*',	'Adj Close**',	'Volume']
+all_data = []
 table_row = 1
 start_height = 0
 
-while True:
+while table_row < 100:
     browser.execute_script(
         f"window.scrollTo({start_height}, document.documentElement.scrollHeight);")
     try:
@@ -26,8 +27,17 @@ while True:
         row_data = []
         for table_cell in table_cells:
             row_data.append(table_cell.get_attribute('textContent'))
+        all_data.append(row_data)
+        print(table_row)
     except:
         break
     table_row += 1
     start_height = browser.execute_script(
         'return document.documentElement.scrollHeight')
+
+
+with open('./data/SP.csv', "w", encoding="utf-8", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(header)
+    for x in all_data:
+        writer.writerow(x)
