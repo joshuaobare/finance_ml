@@ -14,8 +14,9 @@ maxBtn.click()
 
 header = ['Date',	'Open',	'High',	'Low',	'Close*',	'Adj Close**',	'Volume']
 table_row = 1
-
+start_height = 0
 while True:
+    browser.execute_script(f"window.scrollTo({start_height}, document.documentElement.scrollHeight);")
     try:
         curr_row = browser.find_element(
             By.XPATH, f'//*[@id="Col1-1-HistoricalDataTable-Proxy"]/section/div[2]/table/tbody/tr[{table_row}]')
@@ -23,3 +24,5 @@ while True:
     except:
         break
     table_row += 1
+    start_height = browser.execute_script('return document.documentElement.scrollHeight')
+    
