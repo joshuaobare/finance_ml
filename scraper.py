@@ -12,7 +12,7 @@ class Scraper:
         self.write_to_file()
 
     def fetchData(self):
-        self.browser.get(url)
+        self.browser.get(self.url)
         arrowBtn = self.browser.find_element(
             By.XPATH, '//*[@id="Col1-1-HistoricalDataTable-Proxy"]/section/div[1]/div[1]/div[1]/div')
         arrowBtn.click()
