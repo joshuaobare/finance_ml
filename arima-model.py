@@ -98,7 +98,23 @@ model = ARIMA(train_data, order=(0,1,1))
 fitted = model.fit()
 print(fitted.summary())
 
+# Forecast
+fc = fitted.forecast(321, alpha=0.05)
 
+# Build pandas series
+fc_series = pd.Series(fc, index=test_data.index)
+
+# Plot
+plt.figure(figsize=(10,5), dpi=100)
+plt.plot(train_data, label='training data')
+plt.plot(test_data, color = 'blue', label='Actual Stock Price')
+plt.plot(fc_series, color = 'orange',label='Predicted Stock Price')
+
+plt.title('Stock Price Prediction')
+plt.xlabel('Time')
+plt.ylabel('Stock Price')
+plt.legend(loc='upper left', fontsize=8)
+plt.show()
 
 
 
