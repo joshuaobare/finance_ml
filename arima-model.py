@@ -93,7 +93,10 @@ print(model_autoARIMA.summary())
 model_autoARIMA.plot_diagnostics(figsize=(15,8))
 plt.show()
 
-
+# Building model
+model = ARIMA(train_data, order=(0,1,1))
+fitted = model.fit()
+print(fitted.summary())
 
 
 
