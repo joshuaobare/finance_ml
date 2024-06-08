@@ -1,14 +1,18 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.arima.model import ARIMA
-from sklearn.metrics import mean_squared_error
+from statsmodels.tsa.seasonal import seasonal_decompose
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+from pylab import rcParams
+from pmdarima.arima import auto_arima
 
 data = pd.read_csv("./data/SP.csv",index_col="Date")
 data.fillna(0)
 data = data[:(int(.3 * len(data)))]
-print(data)
+#print(data)
 data.index = pd.to_datetime(data.index, format="%b %d, %Y")
 
 # Remove any commas on the Highs column
@@ -44,12 +48,32 @@ def test_stationarity(timeseries):
     print(output)
 test_stationarity(data["High"])
 
+result = seasonal_decompose(data["High"], model='multiplicative', period = 30)
+fig = plt.figure()
+fig = result.plot()
+fig.set_size_inches(16,9)
 
+rcParams['figure.figsize'] = 10, 6
+df_log = np.log(data["High"])
+moving_avg = df_log.rolling(12).mean()
+std_dev = df_log.rolling(12).std()
+#plt.legend(loc = "best")
+plt.title("Moving Average")
+plt.plot(std_dev, color = 'black', label = "Standard Deviation")
+plt.plot(moving_avg, color='red', label="Mean")
+#plt.legend(loc = "best")
+plt.show()
 
-
-
-
-
+print("##############################################################")
+test_data, train_data = df_log[3:int(len(df_log)*0.9)], df_log[int(len(df_log)*0.9):]
+plt.figure(figsize=(10,6))
+plt.grid(True)
+plt.xlabel('Dates')
+plt.ylabel('Closing Prices')
+plt.plot(df_log, 'green', label='Train data')
+plt.plot(test_data, 'blue', label='Test data')
+plt.legend()
+plt.show()
 
 
 
