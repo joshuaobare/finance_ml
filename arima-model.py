@@ -8,6 +8,7 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from pylab import rcParams
 from pmdarima.arima import auto_arima
+import math
 
 data = pd.read_csv("./data/SP.csv",index_col="Date")
 data.fillna(0)
@@ -99,7 +100,7 @@ fitted = model.fit()
 print(fitted.summary())
 
 # Forecast
-fc = fitted.forecast(321, alpha=0.05)
+fc = fitted.forecast(6519, alpha=0.05)
 
 # Build pandas series
 fc_series = pd.Series(fc, index=test_data.index)
@@ -116,7 +117,15 @@ plt.ylabel('Stock Price')
 plt.legend(loc='upper left', fontsize=8)
 plt.show()
 
-
+# Evaluate model performance
+mse = mean_squared_error(test_data, fc)
+print('MSE: '+str(mse))
+mae = mean_absolute_error(test_data, fc)
+print('MAE: '+str(mae))
+rmse = math.sqrt(mean_squared_error(test_data, fc))
+print('RMSE: '+str(rmse))
+mape = np.mean(np.abs(fc - test_data)/np.abs(test_data))
+print('MAPE: '+str(mape))
 
 
 
