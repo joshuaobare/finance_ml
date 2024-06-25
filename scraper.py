@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import csv
+from xpaths import XPATHS
+import csv, os
 
 class Scraper:
     def __init__(self, url):
@@ -10,26 +11,31 @@ class Scraper:
         self.all_data = []
         self.start_date = None
         self.find_start_date()
-        self.fetchData()
+        self.fetch_data()
         self.write_to_file()
 
     def find_start_date(self):
         file_name = self.url.split("/")[4]
+        file_path = f"./data/{file_name}.csv"
 
-        with open(f"./data/{file_name}.csv", "r", encoding="utf-8", newline="") as file:
+        # check if file exists
+        if not os.path.isfile(file_path):
+            return
+
+        with open(file_path, "r", encoding="utf-8", newline="") as file:
             final_line = file.readlines()[-1]
             self.start_date = final_line.split(",")[0]
 
-    def fetchData(self):
+    def fetch_data(self):
         self.browser.get(self.url)
-        arrowBtn = self.browser.find_element(
-            By.XPATH, '//*[@id="nimbus-app"]/section/section/section/article/div[1]/div[1]/div[1]/button')
-        arrowBtn.click()
-        maxBtn = self.browser.find_element(
-            By.XPATH, '/html/body/div[1]/main/section/section/section/article/div[1]/div[1]/div[1]/div/div/div[2]/section/div[1]/button[8]')
-        maxBtn.click()
-        doneBtn = self.browser.find_element(By.XPATH, '//*[@id="menu-50"]/div[2]/section/div[3]/button[1]')
-        doneBtn.click()
+        arrow_btn = self.browser.find_element(
+            By.XPATH, XPATHS["arrow_btn"])
+        arrow_btn.click()
+        max_btn = self.browser.find_element(
+            By.XPATH, XPATHS["max_btn"])
+        max_btn.click()
+        done_btn = self.browser.find_element(By.XPATH, XPATHS["done_btn"])
+        done_btn.click()
 
         table_row = 1
         start_height = 0
@@ -39,7 +45,7 @@ class Scraper:
                 f"window.scrollTo({start_height}, document.documentElement.scrollHeight);")
             try:
                 curr_row = self.browser.find_element(
-                    By.XPATH, f'//*[@id="Col1-1-HistoricalDataTable-Proxy"]/section/div[2]/table/tbody/tr[{table_row}]')
+                    By.XPATH, XPATHS["curr_row"] + f'{table_row}]')
                 table_cells = curr_row.find_elements(By.TAG_NAME, 'td')
                 row_data = []
                 for table_cell in table_cells:
