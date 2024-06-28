@@ -2,11 +2,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from xpaths import XPATHS
 import csv, os
+from time import sleep
+from datetime import datetime
 
 class Scraper:
-    def __init__(self, url):
+    def __init__(self, url, title):
         self.browser = webdriver.Firefox()
         self.url = url
+        self.title = title
         self.header = ['Date',	'Open',	'High',	'Low',	'Close*',	'Adj Close**',	'Volume']
         self.all_data = []
         self.start_date = None
@@ -15,8 +18,8 @@ class Scraper:
         self.write_to_file()
 
     def find_start_date(self):
-        file_name = self.url.split("/")[4]
-        file_path = f"./data/{file_name}.csv"
+        #file_name = self.url.split("/")[4]
+        file_path = f"./data/{self.title}.csv"
 
         # check if file exists
         if not os.path.isfile(file_path):
@@ -27,15 +30,15 @@ class Scraper:
             self.start_date = final_line.split(",")[0]
 
     def fetch_data(self):
-        self.browser.get(self.url)
+        self.browser.get(self.url) 
+        sleep(5)
         arrow_btn = self.browser.find_element(
             By.XPATH, XPATHS["arrow_btn"])
         arrow_btn.click()
         max_btn = self.browser.find_element(
             By.XPATH, XPATHS["max_btn"])
-        max_btn.click()
-        done_btn = self.browser.find_element(By.XPATH, XPATHS["done_btn"])
-        done_btn.click()
+        max_btn.click()        
+        sleep(5)
 
         table_row = 1
         start_height = 0
@@ -43,15 +46,31 @@ class Scraper:
         while True:
             self.browser.execute_script(
                 f"window.scrollTo({start_height}, document.documentElement.scrollHeight);")
-            try:
+            try:                
                 curr_row = self.browser.find_element(
                     By.XPATH, XPATHS["curr_row"] + f'{table_row}]')
                 table_cells = curr_row.find_elements(By.TAG_NAME, 'td')
-                row_data = []
-                for table_cell in table_cells:
-                    row_data.append(table_cell.get_attribute('textContent'))
+                break_flag = False
+                row_data = []                
+
+                for cell_idx in range(len(table_cells)):                    
+                    cell_data = table_cells[cell_idx]
+                    cell_data = cell_data.get_attribute('textContent')                    
+
+                    if cell_idx == 0:
+                        date_obj = datetime.strptime(cell_data, "%b %d, %Y")
+                        cell_data = date_obj.strftime("%Y-%m-%d")
+                        print(cell_data)
+
+                    if self.start_date and cell_data == self.start_date:
+                        break_flag = True
+                        break
+                    row_data.append(cell_data)
+
+                if break_flag:
+                    break
+
                 self.all_data.append(row_data)
-                print(table_row)
             except:
                 break
             table_row += 1
@@ -59,12 +78,18 @@ class Scraper:
                 'return document.documentElement.scrollHeight')
 
     def write_to_file(self):
-        page_title = self.browser.title
-        with open(f'./data/{page_title[:2]}.csv', "w", encoding="utf-8", newline="") as file:
+        page_title = self.title
+        with open(f'./data/{page_title}.csv', "a+", encoding="utf-8", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(self.header)
-            for data_row in self.all_data:
-                writer.writerow(data_row)
+
+            if not self.start_date:                
+                writer.writerow(self.header)
+            else:
+                writer.writerow([])
+            all_data_length = len(self.all_data)
+
+            for data_row_idx in range(all_data_length - 1, - 1, -1):
+                writer.writerow(self.all_data[data_row_idx])
 
 
 sp_url = "https://finance.yahoo.com/quote/%5EGSPC/history?period1=-1325635200&period2=1709510400&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true"
@@ -72,8 +97,9 @@ btc_url = "https://finance.yahoo.com/quote/BTC-USD/history?period1=1410912000&pe
 gold_url = "https://finance.yahoo.com/quote/GC%3DF/history"
 eth_url = "https://finance.yahoo.com/quote/ETH-USD/history"
 crude_url = "https://finance.yahoo.com/quote/CL%3DF/history"
-sp_data = Scraper(sp_url)
-btc_data = Scraper("https://finance.yahoo.com/quote/BTC-USD/history/")
+#sp_data = Scraper(sp_url)
+#btc_data = Scraper("https://finance.yahoo.com/quote/BTC-USD/history/", "BTC-USD")
+eth_data = Scraper(eth_url, "ETH-USD")
 '''eth_data = Scraper(eth_url)
 crude_data = Scraper(crude_url)'''
 
