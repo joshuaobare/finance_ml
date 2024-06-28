@@ -10,11 +10,11 @@ from pylab import rcParams
 from pmdarima.arima import auto_arima
 import math
 
-data = pd.read_csv("./data/SP.csv",index_col="Date")
+data = pd.read_csv("./data/BTC-USD.csv",index_col="Date")
 data.fillna(0)
-data = data[:(int(.3 * len(data)))]
+#data = data[:(int(.3 * len(data)))]
 #print(data)
-data.index = pd.to_datetime(data.index, format="%b %d, %Y")
+data.index = pd.to_datetime(data.index, format="%Y-%m-%d")
 
 # Remove any commas on the Highs column
 data["High"] = data["High"].replace(",","", regex=True)
@@ -25,7 +25,7 @@ plt.plot(data["High"])
 plt.title("S&P Trend")
 plt.xlabel("Date")
 plt.ylabel("Price in USD")
-#print(data["High"])
+print(data["High"])
 plt.show()
 
 def test_stationarity(timeseries):
@@ -66,12 +66,12 @@ plt.plot(moving_avg, color='red', label="Mean")
 plt.show()
 
 print("##############################################################")
-test_data, train_data = df_log[3:int(len(df_log)*0.9)], df_log[int(len(df_log)*0.9):]
+train_data, test_data = df_log[3:int(len(df_log)*0.9)], df_log[int(len(df_log)*0.9):]
 plt.figure(figsize=(10,6))
 plt.grid(True)
 plt.xlabel('Dates')
 plt.ylabel('Closing Prices')
-plt.plot(df_log, 'green', label='Train data')
+plt.plot(df_log, 'red', label='Train data')
 plt.plot(test_data, 'blue', label='Test data')
 plt.legend()
 plt.show()
@@ -82,7 +82,7 @@ model_autoARIMA = auto_arima(train_data, start_p=0, start_q=0,
                       max_p=3, max_q=3, # maximum p and q
                       m=1,              # frequency of series
                       d=None,           # let model determine 'd'
-                      seasonal=False,   # No Seasonality
+                      seasonal=True,   # No Seasonality
                       start_P=0, 
                       D=0, 
                       trace=True,
@@ -100,16 +100,20 @@ fitted = model.fit()
 print(fitted.summary())
 
 # Forecast
-fc = fitted.forecast(6519, alpha=0.05)
+fc = fitted.forecast(len(test_data), alpha=0.05)
+print(fitted.forecast(len(test_data), alpha=0.05))
 
 # Build pandas series
 fc_series = pd.Series(fc, index=test_data.index)
+
 
 # Plot
 plt.figure(figsize=(10,5), dpi=100)
 plt.plot(train_data, label='training data')
 plt.plot(test_data, color = 'blue', label='Actual Stock Price')
 plt.plot(fc_series, color = 'orange',label='Predicted Stock Price')
+plt.plot()
+
 
 plt.title('Stock Price Prediction')
 plt.xlabel('Time')
@@ -125,7 +129,7 @@ print('MAE: '+str(mae))
 rmse = math.sqrt(mean_squared_error(test_data, fc))
 print('RMSE: '+str(rmse))
 mape = np.mean(np.abs(fc - test_data)/np.abs(test_data))
-print('MAPE: '+str(mape))
+print('MAPE: '+ str(mape))
 
 
 
