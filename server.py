@@ -4,8 +4,9 @@ import pickle
 import json
 from urllib.parse import parse_qs
 
+
 with open("arima_model.pkl", "rb") as f:
-    model = pickle.load(f)
+    arima_model = pickle.load(f)
 
 class RequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
@@ -14,10 +15,13 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
         data = json.loads(post_data.decode('utf-8'))
 
         features = data.get('features', [])
-        prediction = model.predict([features])
+        print(dir(arima_model))
+        prediction = pickle.load(open('arima_model.pkl', 'rb'))
+        results = prediction.fit()
+        full_results = results.get_forecast(steps=1).predicted_mean.iloc[0]
 
         response = {
-            'prediction': prediction.tolist()
+            'prediction': full_results
         }
 
         self.send_response(200)
