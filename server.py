@@ -10,8 +10,12 @@ import pickle
 with open('arima_model.pkl', 'rb') as file:
     model = pickle.load(file)
 
-data = pd.read_csv("./data/BTC-USD.csv", index_col="Date", parse_dates=True)
+data = pd.read_csv("./data/ETH-USD.csv", index_col="Date", parse_dates=True)
 data["Close"] = pd.to_numeric(data["Close"].replace(",", "", regex=True))
+
+
+def calculate_mape(actual, predicted):
+    return np.mean(np.abs((actual - predicted) / actual)) * 100
 
 
 class PredictionHandler(BaseHTTPRequestHandler):
@@ -45,7 +49,15 @@ class PredictionHandler(BaseHTTPRequestHandler):
             forecast_ci = forecast.conf_int()
             lower_bound = last_price + forecast_ci.iloc[0, 0]
             upper_bound = last_price + forecast_ci.iloc[0, 1]
-            m
+
+            # Calculate MAPE
+            # We'll use the last 30 days for this example
+            last_30_days = data['Close'].iloc[-30:]
+            last_30_days_forecast = model.get_forecast(steps=30)
+            last_30_days_predicted = last_30_days.iloc[0] + \
+                last_30_days_forecast.predicted_mean.cumsum()
+            mape = calculate_mape(last_30_days.values,
+                                  last_30_days_predicted.values)
 
             # Prepare the response
             response = {
@@ -53,7 +65,7 @@ class PredictionHandler(BaseHTTPRequestHandler):
                 'predicted_price': float(next_day_price),
                 'lower_bound': float(lower_bound),
                 'upper_bound': float(upper_bound),
-                "accuracy":
+                "accuracy": mape
             }
 
             self._set_headers()
