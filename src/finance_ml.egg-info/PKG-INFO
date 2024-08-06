@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: finance_ml
+Version: 0.0.1
+Summary: ML component to financial management system
+Author-email: Joshua Obare <jobare.obare@gmail.com>
+Project-URL: Homepage, https://github.com/joshuaobare/finance_ml
+Project-URL: Issues, https://github.com/joshuaobare/finance_ml/issues
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+
+# finance_ml

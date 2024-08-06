@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+src/finance_ml/__init__.py
+src/finance_ml/arima_model.py
+src/finance_ml/scraper.py
+src/finance_ml/xpaths.py
+src/finance_ml.egg-info/PKG-INFO
+src/finance_ml.egg-info/SOURCES.txt
+src/finance_ml.egg-info/dependency_links.txt
+src/finance_ml.egg-info/top_level.txt
+src/server/server.py
