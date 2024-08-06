@@ -45,13 +45,15 @@ class PredictionHandler(BaseHTTPRequestHandler):
             forecast_ci = forecast.conf_int()
             lower_bound = last_price + forecast_ci.iloc[0, 0]
             upper_bound = last_price + forecast_ci.iloc[0, 1]
+            m
 
             # Prepare the response
             response = {
                 'date': future_dates[0].strftime('%Y-%m-%d'),
                 'predicted_price': float(next_day_price),
                 'lower_bound': float(lower_bound),
-                'upper_bound': float(upper_bound)
+                'upper_bound': float(upper_bound),
+                "accuracy":
             }
 
             self._set_headers()
