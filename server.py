@@ -1,36 +1,71 @@
-import http.server
-import socketserver
-import pickle 
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
-from urllib.parse import parse_qs
+import pandas as pd
+import numpy as np
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from datetime import timedelta
+import pickle
 
-with open("arima_model.pkl", "rb") as f:
-    model = pickle.load(f)
+# Load your data and model
+with open('arima_model.pkl', 'rb') as file:
+    model = pickle.load(file)
 
-class RequestHandler(http.server.SimpleHTTPRequestHandler):
-    def do_POST(self):
-        content_length = int(self.headers["Content-Length"])
-        post_data = self.rfile.read(content_length)
-        data = json.loads(post_data.decode('utf-8'))
+data = pd.read_csv("./data/BTC-USD.csv", index_col="Date", parse_dates=True)
+data["Close"] = pd.to_numeric(data["Close"].replace(",", "", regex=True))
 
-        features = data.get('features', [])
-        prediction = model.predict([features])
 
-        response = {
-            'prediction': prediction.tolist()
-        }
-
+class PredictionHandler(BaseHTTPRequestHandler):
+    def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')  # Allow all origins
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')  # Allow POST and OPTIONS methods
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')  # Allow specific headers
+        # This allows CORS for all domains
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
-        self.wfile.write(json.dumps(response).encode('utf-8'))
 
-PORT = 8080
+    def do_GET(self):
+        if self.path == '/predict':
+            # Get the last date in your dataset
+            last_date = data.index[-1]
 
-with socketserver.TCPServer(("", PORT), RequestHandler) as httpd:
-    print(f"Serving aat port {PORT}")
+            # Create a date range for the next day
+            future_dates = pd.date_range(
+                start=last_date + timedelta(days=1), periods=1)
+
+            # Forecast the differenced value for the next day
+            forecast = model.get_forecast(steps=1)
+            forecast_mean = forecast.predicted_mean
+
+            # Get the last actual closing price
+            last_price = data['Close'].iloc[-1]
+
+            # Add the forecasted difference to the last price
+            next_day_price = last_price + forecast_mean.values[0]
+
+            # Get the confidence interval
+            forecast_ci = forecast.conf_int()
+            lower_bound = last_price + forecast_ci.iloc[0, 0]
+            upper_bound = last_price + forecast_ci.iloc[0, 1]
+
+            # Prepare the response
+            response = {
+                'date': future_dates[0].strftime('%Y-%m-%d'),
+                'predicted_price': float(next_day_price),
+                'lower_bound': float(lower_bound),
+                'upper_bound': float(upper_bound)
+            }
+
+            self._set_headers()
+            self.wfile.write(json.dumps(response).encode())
+        else:
+            self.send_error(404)
+
+
+def run(server_class=HTTPServer, handler_class=PredictionHandler, port=7000):
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    print(f'Starting server on port {port}...')
     httpd.serve_forever()
+
+
+if __name__ == '__main__':
+    run()
