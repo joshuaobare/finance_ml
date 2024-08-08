@@ -1,16 +1,19 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from xpaths import XPATHS
-import csv, os
+import csv
+import os
 from time import sleep
 from datetime import datetime
+
 
 class Scraper:
     def __init__(self, url, title):
         self.browser = webdriver.Firefox()
         self.url = url
         self.title = title
-        self.header = ['Date',	'Open',	'High',	'Low',	'Close',	'Adj Close',	'Volume']
+        self.header = ['Date',	'Open',	'High',
+                       'Low',	'Close',	'Adj Close',	'Volume']
         self.all_data = []
         self.start_date = None
         self.find_start_date()
@@ -19,8 +22,8 @@ class Scraper:
         self.browser.close()
 
     def find_start_date(self):
-        #file_name = self.url.split("/")[4]
-        file_path = f"./data/{self.title}.csv"
+        # file_name = self.url.split("/")[4]
+        file_path = f"src\\finance_ml\\data\\{self.title}.csv"
 
         # check if file exists
         if not os.path.isfile(file_path):
@@ -31,14 +34,14 @@ class Scraper:
             self.start_date = final_line.split(",")[0]
 
     def fetch_data(self):
-        self.browser.get(self.url) 
+        self.browser.get(self.url)
         sleep(5)
         arrow_btn = self.browser.find_element(
             By.XPATH, XPATHS["arrow_btn"])
         arrow_btn.click()
         max_btn = self.browser.find_element(
             By.XPATH, XPATHS["max_btn"])
-        max_btn.click()        
+        max_btn.click()
         sleep(5)
 
         table_row = 1
@@ -47,16 +50,16 @@ class Scraper:
         while True:
             self.browser.execute_script(
                 f"window.scrollTo({start_height}, document.documentElement.scrollHeight);")
-            try:                
+            try:
                 curr_row = self.browser.find_element(
                     By.XPATH, XPATHS["curr_row"] + f'{table_row}]')
                 table_cells = curr_row.find_elements(By.TAG_NAME, 'td')
                 break_flag = False
-                row_data = []                
+                row_data = []
 
-                for cell_idx in range(len(table_cells)):                    
+                for cell_idx in range(len(table_cells)):
                     cell_data = table_cells[cell_idx]
-                    cell_data = cell_data.get_attribute('textContent')                    
+                    cell_data = cell_data.get_attribute('textContent')
 
                     if cell_idx == 0:
                         date_obj = datetime.strptime(cell_data, "%b %d, %Y")
@@ -80,10 +83,10 @@ class Scraper:
 
     def write_to_file(self):
         page_title = self.title
-        with open(f'./data/{page_title}.csv', "a+", encoding="utf-8", newline="") as file:
+        with open(f'src\\finance_ml\\data\\{self.title}.csv', "a+", encoding="utf-8", newline="") as file:
             writer = csv.writer(file)
 
-            if not self.start_date:                
+            if not self.start_date:
                 writer.writerow(self.header)
             else:
                 writer.writerow([])
@@ -99,14 +102,9 @@ gold_url = "https://finance.yahoo.com/quote/GC%3DF/history"
 eth_url = "https://finance.yahoo.com/quote/ETH-USD/history"
 crude_url = "https://finance.yahoo.com/quote/CL%3DF/history"
 
-if __name__ ==  '__main__':
+if __name__ == '__main__':
     sp_data = Scraper(sp_url, 'SPY-USD')
     btc_data = Scraper(btc_url, "BTC-USD")
     eth_data = Scraper(eth_url, "ETH-USD")
     gold_data = Scraper(gold_url, "GLD-USD")
     crude_data = Scraper(crude_url, "USO-USD")
-
-
-
-
-
