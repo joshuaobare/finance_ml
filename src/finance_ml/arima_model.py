@@ -10,7 +10,7 @@ import pickle
 
 def generate_arima_model(series_name):
     # Load and prepare data
-    data = pd.read_csv(f"./data/{series_name}.csv",
+    data = pd.read_csv(f"src\\finance_ml\\data\\{series_name}.csv",
                        index_col="Date", parse_dates=True)
     data["Close"] = pd.to_numeric(data["Close"].replace(",", "", regex=True))
 

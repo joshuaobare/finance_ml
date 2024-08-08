@@ -1,3 +1,4 @@
 env
 pyvenv.cfg
 *.pkl
+__pycache__
