@@ -5,6 +5,7 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from pmdarima import auto_arima
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from datetime import timedelta
+import pickle
 
 
 def arima_model(series_name):
@@ -116,3 +117,6 @@ def arima_model(series_name):
     plt.ylabel('Price in USD')
     plt.legend()
     plt.show()
+
+    with open(f'src\\finance_ml\\models\\{series_name}.pkl', 'wb') as file:
+        pickle.dump(results, file)
