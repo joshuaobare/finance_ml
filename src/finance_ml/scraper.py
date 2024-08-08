@@ -10,12 +10,13 @@ class Scraper:
         self.browser = webdriver.Firefox()
         self.url = url
         self.title = title
-        self.header = ['Date',	'Open',	'High',	'Low',	'Close*',	'Adj Close**',	'Volume']
+        self.header = ['Date',	'Open',	'High',	'Low',	'Close',	'Adj Close',	'Volume']
         self.all_data = []
         self.start_date = None
         self.find_start_date()
         self.fetch_data()
         self.write_to_file()
+        self.browser.close()
 
     def find_start_date(self):
         #file_name = self.url.split("/")[4]
@@ -92,16 +93,19 @@ class Scraper:
                 writer.writerow(self.all_data[data_row_idx])
 
 
-sp_url = "https://finance.yahoo.com/quote/%5EGSPC/history?period1=-1325635200&period2=1709510400&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true"
-btc_url = "https://finance.yahoo.com/quote/BTC-USD/history?period1=1410912000&period2=1709856000&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true"
+sp_url = "https://finance.yahoo.com/quote/%5EGSPC/history"
+btc_url = "https://finance.yahoo.com/quote/BTC-USD/history"
 gold_url = "https://finance.yahoo.com/quote/GC%3DF/history"
 eth_url = "https://finance.yahoo.com/quote/ETH-USD/history"
 crude_url = "https://finance.yahoo.com/quote/CL%3DF/history"
-#sp_data = Scraper(sp_url)
-#btc_data = Scraper("https://finance.yahoo.com/quote/BTC-USD/history/", "BTC-USD")
-eth_data = Scraper(eth_url, "ETH-USD")
-'''eth_data = Scraper(eth_url)
-crude_data = Scraper(crude_url)'''
+
+if __name__ ==  '__main__':
+    sp_data = Scraper(sp_url, 'SPY-USD')
+    btc_data = Scraper(btc_url, "BTC-USD")
+    eth_data = Scraper(eth_url, "ETH-USD")
+    gold_data = Scraper(gold_url, "GLD-USD")
+    crude_data = Scraper(crude_url, "USO-USD")
+
 
 
 
