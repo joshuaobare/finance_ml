@@ -8,7 +8,7 @@ from datetime import timedelta
 import pickle
 
 
-def arima_model(series_name):
+def generate_arima_model(series_name):
     # Load and prepare data
     data = pd.read_csv(f"./data/{series_name}.csv",
                        index_col="Date", parse_dates=True)

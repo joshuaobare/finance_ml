@@ -22,7 +22,9 @@ class Scraper:
         self.browser.close()
 
     def find_start_date(self):
-        # file_name = self.url.split("/")[4]
+        """
+        Find the last recorded date in the existing CSV file, if any.
+        """
         file_path = f"src\\finance_ml\\data\\{self.title}.csv"
 
         # check if file exists
@@ -82,6 +84,9 @@ class Scraper:
                 'return document.documentElement.scrollHeight')
 
     def write_to_file(self):
+        """
+        Write the collected data to a CSV file.
+        """
         page_title = self.title
         with open(f'src\\finance_ml\\data\\{self.title}.csv', "a+", encoding="utf-8", newline="") as file:
             writer = csv.writer(file)
@@ -96,15 +101,14 @@ class Scraper:
                 writer.writerow(self.all_data[data_row_idx])
 
 
-sp_url = "https://finance.yahoo.com/quote/%5EGSPC/history"
-btc_url = "https://finance.yahoo.com/quote/BTC-USD/history"
-gold_url = "https://finance.yahoo.com/quote/GC%3DF/history"
-eth_url = "https://finance.yahoo.com/quote/ETH-USD/history"
-crude_url = "https://finance.yahoo.com/quote/CL%3DF/history"
-
 if __name__ == '__main__':
-    sp_data = Scraper(sp_url, 'SPY-USD')
-    btc_data = Scraper(btc_url, "BTC-USD")
-    eth_data = Scraper(eth_url, "ETH-USD")
-    gold_data = Scraper(gold_url, "GLD-USD")
-    crude_data = Scraper(crude_url, "USO-USD")
+    urls_and_titles = {
+        "https://finance.yahoo.com/quote/%5EGSPC/history": "SPY-USD",
+        "https://finance.yahoo.com/quote/BTC-USD/history": "BTC-USD",
+        "https://finance.yahoo.com/quote/ETH-USD/history": "ETH-USD",
+        "https://finance.yahoo.com/quote/GC%3DF/history": "GLD-USD",
+        "https://finance.yahoo.com/quote/CL%3DF/history": "USO-USD"
+    }
+
+    for url, title in urls_and_titles.items():
+        Scraper(url, title)
