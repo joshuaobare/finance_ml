@@ -94,6 +94,7 @@ class PredictionHandler(BaseHTTPRequestHandler):
 
             # Prepare the response
             response = {
+                'data':{"dates":data["Date"], "data":data},
                 'date': future_dates[0].strftime('%Y-%m-%d'),
                 'predicted_price': float(next_day_price),
                 'lower_bound': float(lower_bound),
@@ -111,7 +112,7 @@ class PredictionHandler(BaseHTTPRequestHandler):
 
 
 def run(server_class=HTTPServer, handler_class=PredictionHandler, port=7000):
-    server_address = ('', port)
+    server_address = ('0.0.0.0', port)
     httpd = server_class(server_address, handler_class)
     print(f'Starting server on port {port}...')
     httpd.serve_forever()
