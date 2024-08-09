@@ -138,13 +138,13 @@ class PredictionHandler(BaseHTTPRequestHandler):
                 response = {
                     'data': {"dates": dataset_dates, "data": data['Close'].values.tolist()},
                     'date': future_dates[0].strftime('%Y-%m-%d'),
-                    "latest_price": data['Close'][-1],
+                    "latest_price": data['Close'].iloc[-1],
                     'predicted_price': float(next_day_price),
                     'lower_bound': float(lower_bound),
                     'upper_bound': float(upper_bound),
-                    "price_difference": float(next_day_price) - data['Close'][-1],
+                    "price_difference": float(next_day_price) - data['Close'].iloc[-1],
                     "accuracy": mape,
-                    "verdict": "SELL" if float(next_day_price) - data['Close'][-1] < 0 else "BUY"
+                    "verdict": "SELL" if float(next_day_price) - data['Close'].iloc[-1] < 0 else "BUY"
                 }
 
             else:
