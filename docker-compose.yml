@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./src/finance_ml/data:/app/src/finance_ml/data
+      - ./src/finance_ml/models:/app/src/finance_ml/models
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    volumes:
+      - ./src/finance_ml/data:/app/src/finance_ml/data
+      - ./src/finance_ml/models:/app/src/finance_ml/models
+    environment:
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  data:
+  models:
