@@ -5,13 +5,19 @@ import numpy as np
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from datetime import timedelta
 import pickle
+from urllib.parse import urlparse, parse_qs
 
-# Load your data and model
-with open('arima_model.pkl', 'rb') as file:
-    model = pickle.load(file)
 
-data = pd.read_csv("./data/ETH-USD.csv", index_col="Date", parse_dates=True)
-data["Close"] = pd.to_numeric(data["Close"].replace(",", "", regex=True))
+def load_model(symbol):
+    # Load your data and model
+    with open(f'src\\finance_ml\\models\\{symbol}.pkl', 'rb') as file:
+        model = pickle.load(file)
+
+    data = pd.read_csv(f"src\\finance_ml\\data\\{symbol}.csv",
+                       index_col="Date", parse_dates=True)
+    data["Close"] = pd.to_numeric(data["Close"].replace(",", "", regex=True))
+
+    return model, data, data['Close']
 
 
 def calculate_mape(actual, predicted):
@@ -27,7 +33,19 @@ class PredictionHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path == '/predict':
+        parsed_path = urlparse(self.path)
+        if parsed_path.path == '/predict':
+            # Parse GET parameters
+            params = parse_qs(parsed_path.query)
+
+            # Get the stock symbol from the GET parameter
+            symbol = params.get('symbol', [''])[0]
+
+            data, model, data['Close'] = load_model(symbol)
+
+            if not symbol:
+                self.send_error(400, "Missing 'symbol' parameter")
+                return
             # Get the last date in your dataset
             last_date = data.index[-1]
 
