@@ -22,6 +22,7 @@ def load_model(symbol):
 
     data = pd.read_csv(data_path,
                        index_col="Date", parse_dates=True)
+    print(data.index)
 
     return model, data
 
@@ -94,12 +95,13 @@ class PredictionHandler(BaseHTTPRequestHandler):
 
             # Prepare the response
             response = {
-                'data':{"dates":data["Date"], "data":data},
+                'data':{"dates":data.index.values.tolist(), "data":data['Close'].values.tolist()},
                 'date': future_dates[0].strftime('%Y-%m-%d'),
+                "latest_price": data['Close'][-1],
                 'predicted_price': float(next_day_price),
                 'lower_bound': float(lower_bound),
                 'upper_bound': float(upper_bound),
-                "accuracy": mape
+                "accuracy": mape,
             }
             self.send_response(200)
             send_cors_headers(self)
