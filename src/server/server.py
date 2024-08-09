@@ -25,14 +25,16 @@ def calculate_mape(actual, predicted):
 
 
 class PredictionHandler(BaseHTTPRequestHandler):
-    def _set_headers(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        # This allows CORS for all domains
+    def do_OPTIONS(self):
+        self.send_response(200, "ok")
         self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        self.send_header("Access-Control-Allow-Headers", "X-Requested-With")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
     def do_GET(self):
+        self.processRequest()
         parsed_path = urlparse(self.path)
         if parsed_path.path == '/predict':
             # Parse GET parameters
@@ -86,7 +88,6 @@ class PredictionHandler(BaseHTTPRequestHandler):
                 "accuracy": mape
             }
 
-            self._set_headers()
             self.wfile.write(json.dumps(response).encode())
         else:
             self.send_error(404)
