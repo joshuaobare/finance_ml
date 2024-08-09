@@ -92,10 +92,16 @@ class PredictionHandler(BaseHTTPRequestHandler):
                 last_30_days_forecast.predicted_mean.cumsum()
             mape = calculate_mape(last_30_days.values,
                                   last_30_days_predicted.values)
+            
+            dataset_dates = data.index.values.tolist()
+            # Convert to pandas datetime
+            dataset_dates = pd.to_datetime(dataset_dates, unit='ns')
 
+            # Convert to list of strings in ISO format
+            dataset_dates = dataset_dates.strftime('%Y-%m-%d').tolist()
             # Prepare the response
             response = {
-                'data':{"dates":data.index.values.tolist(), "data":data['Close'].values.tolist()},
+                'data':{"dates":dataset_dates, "data":data['Close'].values.tolist()},
                 'date': future_dates[0].strftime('%Y-%m-%d'),
                 "latest_price": data['Close'][-1],
                 'predicted_price': float(next_day_price),
