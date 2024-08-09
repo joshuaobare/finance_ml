@@ -6,18 +6,24 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from datetime import timedelta
 import pickle
 from urllib.parse import urlparse, parse_qs
+import os
 
 
 def load_model(symbol):
+        # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Construct paths relative to the current script
+    model_path = os.path.join(current_dir, '..', 'finance_ml', 'models', f'{symbol}.pkl')
+    data_path = os.path.join(current_dir, '..', 'finance_ml', 'data', f'{symbol}.csv')
     # Load your data and model
-    with open(f'src\\finance_ml\\models\\{symbol}.pkl', 'rb') as file:
+    with open(model_path, 'rb') as file:
         model = pickle.load(file)
 
-    data = pd.read_csv(f"src\\finance_ml\\data\\{symbol}.csv",
+    data = pd.read_csv(data_path,
                        index_col="Date", parse_dates=True)
-    data["Close"] = pd.to_numeric(data["Close"].replace(",", "", regex=True))
 
-    return model, data, data['Close']
+    return model, data
 
 
 def calculate_mape(actual, predicted):
@@ -34,16 +40,23 @@ class PredictionHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        self.processRequest()
+        def send_cors_headers(self):
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type")
         parsed_path = urlparse(self.path)
-        if parsed_path.path == '/predict':
-            # Parse GET parameters
-            params = parse_qs(parsed_path.query)
+        print(parsed_path)
+        path_parts = parsed_path.path.split('/')
+        if path_parts[1] == 'predict':
+            # Extract symbol from the path
+            symbol = None
+            for part in path_parts[2:]:
+                if part.startswith('symbol='):
+                    symbol = part.split('=')[1]
+                    break
 
-            # Get the stock symbol from the GET parameter
-            symbol = params.get('symbol', [''])[0]
-
-            data, model, data['Close'] = load_model(symbol)
+            model, data = load_model(symbol)
+            data["Close"] = pd.to_numeric(data["Close"].replace(",", "", regex=True))
 
             if not symbol:
                 self.send_error(400, "Missing 'symbol' parameter")
@@ -87,6 +100,10 @@ class PredictionHandler(BaseHTTPRequestHandler):
                 'upper_bound': float(upper_bound),
                 "accuracy": mape
             }
+            self.send_response(200)
+            send_cors_headers(self)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
 
             self.wfile.write(json.dumps(response).encode())
         else:
