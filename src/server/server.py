@@ -28,10 +28,10 @@ def load_data(symbol):
     data_path, model_path = get_directories()
 
     data_path = os.path.join(data_path, f'{symbol}.csv')
-
     # Load data
-    data = pd.read_csv(f"{data_path}.csv",
+    data = pd.read_csv(data_path,
                        index_col="Date", parse_dates=True)
+    data['Close'] = pd.to_numeric(data['Close'].replace(",", "", regex=True))
 
     return data
 
@@ -118,9 +118,6 @@ class PredictionHandler(BaseHTTPRequestHandler):
                 return
 
             data = load_data(symbol)
-
-            data["Close"] = pd.to_numeric(
-                data["Close"].replace(",", "", regex=True))
 
             dataset_dates = data.index.values.tolist()
             # Convert to pandas datetime
