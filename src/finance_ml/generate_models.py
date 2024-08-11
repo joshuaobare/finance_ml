@@ -6,7 +6,7 @@ def main():
             #    "BTC-USD",
             #    "ETH-USD",
             #    "GLD-USD",
-               "USO-USD",
+            #   "USO-USD",
                 "SPY-USD"
                ]
 

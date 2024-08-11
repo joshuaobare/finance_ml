@@ -26,7 +26,7 @@ class Scraper:
         Find the last recorded date in the existing CSV file, if any.
         """
         file_path = f"src\\finance_ml\\data\\{self.title}.csv"
-
+        print(file_path)
         # check if file exists
         if not os.path.isfile(file_path):
             return
@@ -103,7 +103,7 @@ class Scraper:
 
 if __name__ == '__main__':
     urls_and_titles = {
-        "https://finance.yahoo.com/quote/%5EGSPC/history": "SPY-USD",
+        # "https://finance.yahoo.com/quote/%5EGSPC/history": "SPY-USD",
         "https://finance.yahoo.com/quote/BTC-USD/history": "BTC-USD",
         "https://finance.yahoo.com/quote/ETH-USD/history": "ETH-USD",
         "https://finance.yahoo.com/quote/GC%3DF/history": "GLD-USD",
